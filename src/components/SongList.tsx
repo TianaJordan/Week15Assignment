@@ -1,5 +1,3 @@
-import { ListGroup } from "react-bootstrap";
-
 import Song from "./Song";
 import { SongItem } from "../types";
 
@@ -15,16 +13,24 @@ export default function SongList({ songs, deleteSong, toggleFavorite }: SongList
     console.log({ songs });
 
     return (
-        <ListGroup>
-            {songs.map((song: SongItem) => (
-            <ListGroup.Item key={song.id}>
-            <Song 
-                song={song} 
-                deleteSong={deleteSong}
-                toggleFavorite={toggleFavorite}
-            />
-            </ListGroup.Item>
-        ))}
-        </ListGroup>
+        <>
+            {songs?.length > 0 ? (
+                songs.map((song: SongItem) => (
+                <div key={song.id}>
+                <Song 
+                    song={song} 
+                    deleteSong={deleteSong}
+                    toggleFavorite={toggleFavorite}
+                />
+                </div>
+                ))
+            ) : (
+            <h2
+                style={{ textAlign: "center", marginTop: "50px", color: "lightgrey" }}
+                >
+                This playlist has no songs.
+            </h2>
+            )}
+        </>
     );
 } 

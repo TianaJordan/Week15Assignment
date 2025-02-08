@@ -1,21 +1,7 @@
-p {
-    margin: 0;
-}
-
 #title {
     font-weight: bold;
 }
 
-#artist {
-    font-size: small;
-}
-
 .song-title-favorited {
     color: rgb(212, 135, 165);
-}
-
-#song {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
