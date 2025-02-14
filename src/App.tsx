@@ -1,19 +1,22 @@
 import './App.css'
 
-import { Alert, Button, Form, Modal} from 'react-bootstrap';
-
-import { SongItem } from "./types.ts";
-import { defaultSongs } from './data.ts';
-import SongList from './components/SongList.tsx';
+import { Alert, Button, Form, Modal, Spinner} from 'react-bootstrap';
 import { ChangeEvent, useState, useEffect } from 'react'
 
+import { NewSongItem } from "./types.ts";
+import SongList from './components/SongList.tsx';
+
+
+const BASE_URL = "https://67afb826dffcd88a67876684.mockapi.io/songs"
+
 function App() {
-  const [songs, setSongs] = useState<SongItem[]>(defaultSongs);
+  const [songs, setSongs] = useState([]);
   const [newSongTitle, setNewSongTitle] = useState<string>("");
   const [newArtistName, setNewArtistName] = useState<string>("");
   const [show, setShow] = useState(false);
   const [showAlert1, setShowAlert1] = useState<boolean>(false);
   const [showAlert2, setShowAlert2] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // open modal when 'add song' button is clicked
   const handleOpenModal= () => setShow(true);
@@ -27,7 +30,7 @@ function App() {
     setNewArtistName("");
   };
 
-   // submit values from input fields
+ // submit values from input fields
    const handleSongTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setNewSongTitle(e.target.value);
   };
@@ -35,64 +38,124 @@ function App() {
     setNewArtistName(e.target.value);
   };
 
-  // set time limit for success alert
-  useEffect(() => {
-    if (showAlert2) {
-      const timer = setTimeout(() => {
-        setShowAlert2(false);
-      }, 2000); 
-      
-      return () => clearTimeout(timer); // clear timeout if component unmounts or showAlert changes
-    }
-  }, [showAlert2]);
+  // API request to retreive all songs
+  const getSongs = async () => {
+    setLoading(true); // set loading to true while waiting for response
+    try {
+      const response = await fetch(BASE_URL);
+      const data = await response.json();
+      setSongs(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false); // set loading to false after the response
+    }      
+  };
 
-  // show required alert if no data is entered, otherwise add the new song to the playlist and show success alert
-  const addSong = () => {
+  // API request to add a new song
+  const addSong = async (e: {preventDefault: () => void}) => {
+    e.preventDefault();
     if(!newSongTitle || !newArtistName) {
-      setShowAlert1(true);
-      return;
-    } else {
-      setShowAlert2(true)
-    }
+          setShowAlert1(true);
+          return;
+        } else {
+          setShowAlert2(true);
+  }
 
-    const newSongItem = {
-      id: songs.length +1,
-      title: newSongTitle,
-      artist: newArtistName,
-      favorited: false
-    };
-    // add new song to existing array of songs 
-    setSongs([...songs, newSongItem]);
-    // clear the input fields after song is added
+  setLoading(true);
+  const song: NewSongItem = {
+    title: newSongTitle,
+    artist: newArtistName,
+    favorited: false,
+  };
+
+  try {
+    await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(song),
+    });
+    await getSongs();
     setNewSongTitle("");
     setNewArtistName("");
-    setShowAlert1(false); // automatically clear required alert when song is successfully added
+  } catch (error) {
+  } finally {
+    setLoading(false);
+    setShowAlert1(false);
+    }
   };
 
-  // filter songs by id and delete selected song
-  const deleteSong = (id:number) => {
-    const updatedSongs = songs.filter((song) => song.id !== id);
-      
-    setSongs(updatedSongs);
+  // API request to get a single song
+  const getSong = async (id:string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/${id}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  // display updated song list and toggle state of favorite button
-  const toggleFavorite = (id:number) => {
-    const updatedSongs = songs.map((song) => {
-      if (song.id === id) {
-        song.favorited = !song.favorited;
-      }
-      return song;
-    });
+  const toggleFavorite = async (id:string) => {
+    setLoading(true);
+    const song = await getSong(id);
 
-    setSongs(updatedSongs);
+    try {
+      await fetch(`${BASE_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...song, favorited: !song.favorited }),
+      });
+      await getSongs();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // API request to delete a song
+  const deleteSong = async (id:string) => {
+    setLoading(true);
+    try {
+      await fetch(`${BASE_URL}/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      await getSongs();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // set time limit for success alert
+  useEffect(() => {
+      if (showAlert2) {
+        const timer = setTimeout(() => {
+          setShowAlert2(false);
+        }, 2000); 
+        
+        return () => clearTimeout(timer); // clear timeout if component unmounts or showAlert changes
+      }  
+  }, [showAlert2]);  
+
+  useEffect(() => {
+      getSongs();
+  }, []); // only run on first render 
 
   return (
       <div className="container">
-      <h1>My Playlist</h1>
-      <Button className=" mb-3" variant="dark" onClick={handleOpenModal}>
-        Add Song
+      <h1>Playlist 1</h1>
+      <Button className="add-button" variant="dark" onClick={handleOpenModal}>
+        Add New Song
       </Button>
       <Modal show={show} onHide={handleCloseModal}>
         <Modal.Header closeButton>
@@ -155,13 +218,22 @@ function App() {
           )} 
         </Modal.Footer>
       </Modal>
+
+      {loading ? (
+        <div className="spinner-container">
+          <Spinner animation="border" role="status" variant="secondary">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+        </div>
+      ) : (
       <SongList 
         songs={songs}
         deleteSong={deleteSong} 
         toggleFavorite={toggleFavorite}
       />
+      )}
     </div>
   );
 }
 
-export default App
+export default App;

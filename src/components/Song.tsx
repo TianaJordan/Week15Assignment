@@ -8,8 +8,8 @@ import Dropdown from 'react-bootstrap/Dropdown';
 // set type to pass data down to child components
 type SongProps = {
     song: SongItem;
-    deleteSong: (id:number) => void;
-    toggleFavorite: (id:number) => void;
+    deleteSong: (id:string) => void;
+    toggleFavorite: (id:string) => void;
 }
 
 // pass down the props and render song list

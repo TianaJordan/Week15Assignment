@@ -4,8 +4,8 @@ import { SongItem } from "../types";
 // set type to pass data to child components
 type SongListProps = {
     songs: SongItem[];
-    deleteSong: (id:number) => void;
-    toggleFavorite: (id:number) => void;
+    deleteSong: (id:string) => void;
+    toggleFavorite: (id:string) => void;
 };
 
 // loop through data array and render single song

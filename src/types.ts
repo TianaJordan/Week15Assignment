@@ -1,6 +1,8 @@
 export type SongItem = {
-    id: number;
+    id: string;
     title: string;
     artist: string;
     favorited: boolean
 }
+
+export type NewSongItem = Omit<SongItem, "id">;
