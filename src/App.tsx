@@ -200,7 +200,7 @@ function App() {
               dismissible
               >
                 <p>
-                  Please enter a song title and artist name before adding a new song to the playlist.
+                  Please enter a song title and artist name before adding a new song to the playlist
                 </p>
             </Alert>
           )} 
@@ -212,7 +212,7 @@ function App() {
               dismissible
               >
                 <p>
-                  The song has been added to the playlist.
+                  The song has been added to the playlist
                 </p>
             </Alert>
           )} 

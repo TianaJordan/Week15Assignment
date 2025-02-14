@@ -28,7 +28,7 @@ export default function SongList({ songs, deleteSong, toggleFavorite }: SongList
             <h2
                 style={{ textAlign: "center", marginTop: "50px", color: "lightgrey" }}
                 >
-                This playlist has no songs.
+                This playlist has no songs
             </h2>
             )}
         </>
